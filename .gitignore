@@ -1,4 +1,4 @@
-﻿# build outputs
+# build outputs
 build/
 out/
 .gradle/
@@ -19,6 +19,8 @@ bin/
 work/
 research/
 
-# local dependency jars
-libs/*.jar
-!libs/.gitkeep
+# local dependency scratch downloads (the build fetches its own dependencies)
+libs/
+
+# sibling worktree of the other loader branch, not content of this branch
+neoforge-1.21.1/
