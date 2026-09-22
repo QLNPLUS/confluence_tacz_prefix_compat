@@ -64,7 +64,7 @@ public final class GunAttributeMapping {
         if (CompatConfig.replaceRangedDamage() && source.value() == LibAttributes.getRangedDamage().value()) {
             return bulletDamage;
         }
-        if (CompatConfig.replaceAttackSpeed() && source.value() == Attributes.ATTACK_SPEED) {
+        if (CompatConfig.replaceAttackSpeed() && source.value() == Attributes.ATTACK_SPEED.value()) {
             return rpm;
         }
         if (CompatConfig.replaceRangedVelocity() && source.value() == LibAttributes.getRangedVelocity().value()) {
