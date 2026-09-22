@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8.5",
+  "package": "dev.confluence_tacz_compat.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "confluence_tacz_compat.refmap.json",
+  "mixins": [
+    "PrefixUtilsMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
