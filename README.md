@@ -71,14 +71,29 @@ TACZ 的所有枪械共用同一个物品 `tacz:modern_kinetic_gun`，且 TACZ �
 
 ```powershell
 # 1.20.1 Forge（JDK 17）
-gradle build
+.\gradlew build
 # 1.21.1 NeoForge（JDK 21）
 cd neoforge-1.21.1
-gradle build
+.\gradlew build
 ```
 
 两个分支都会从 CurseForge 坐标自动取得编译所需的 Confluence 及其内置库，
 无需手动准备依赖 jar。
+
+## 验证状态
+
+| 项目 | 1.20.1 Forge | 1.21.1 NeoForge |
+|---|---|---|
+| 编译（真实 Confluence 产物） | 通过 | 通过 |
+| 发布 jar 内容检查（元数据、Mixin 配置、数据包标签） | 通过 | 通过 |
+| 专用服务器启动到 `Done` | 未执行（见下） | 通过，模组与依赖共 22 项全部加载 |
+| 词条标签 / 重铸资格（`couldReforge`） | 未执行 | 通过 |
+| 获取时随机词条 + 配置开关 A/B | 未执行 | 通过（开：40 次判定 23 次获得词条；关：0 次） |
+| 词条属性映射到 GunsmithLib | 未执行 | 通过（存储 `ranged_damage`，实际生效 `gunsmithlib:bullet_damage`，数值与运算方式不变） |
+
+1.20.1 分支未做运行时验证的原因：Confluence 1.20.1 强制依赖的 **PortLib** 没有发布到
+任何公开 Maven、CurseForge、Modrinth 或 GitHub Release，无法在开发环境中组装出可启动的依赖集合。
+该分支的编译是针对真实 Confluence 1.20.1 产物（含其内置的 Magic-Lib 与 TerraCurio）完成的。
 
 ## 已知限制
 
