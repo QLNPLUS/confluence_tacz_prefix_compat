@@ -1,0 +1,73 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.107'
+}
+
+version = mod_version
+group = mod_group_id
+base { archivesName = "${mod_id}-neoforge" }
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+}
+
+neoForge {
+    version = project.neo_version
+    parchment {
+        mappingsVersion = parchment_mappings_version
+        minecraftVersion = parchment_minecraft_version
+    }
+    runs {
+        client { client() }
+        server {
+            server()
+            programArgument '--nogui'
+        }
+        configureEach { gameDirectory = project.file("run/${name}") }
+    }
+    mods {
+        "${mod_id}" { sourceSet sourceSets.main }
+    }
+}
+
+repositories {
+    maven { name = 'CurseMaven'; url = 'https://cursemaven.com' }
+}
+
+// 与 Forge 分支同理：Confluence 的 jarJar 内嵌库（Confluence-Magic-Lib / TerraCurio）
+// 不会自动进入编译类路径，这里从唯一的 CurseForge 坐标解出来。
+configurations {
+    confluenceDist
+}
+
+dependencies {
+    confluenceDist 'curse.maven:confluence-1209464:8940190'
+}
+
+def confluenceLibsDir = layout.buildDirectory.dir('confluence-libs')
+
+def extractConfluenceLibs = tasks.register('extractConfluenceLibs', Sync) {
+    from({ zipTree(configurations.confluenceDist.singleFile) }) {
+        include 'META-INF/jarjar/*.jar'
+        eachFile { it.relativePath = new RelativePath(true, it.name) }
+        includeEmptyDirs = false
+    }
+    into confluenceLibsDir
+}
+
+dependencies {
+    compileOnly files({ configurations.confluenceDist.singleFile })
+    compileOnly files({ confluenceLibsDir.get().asFile.listFiles() }).builtBy(extractConfluenceLibs)
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+}
+
+tasks.withType(ProcessResources).configureEach {
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand project.properties
+    }
+}
