@@ -89,7 +89,7 @@ cd neoforge-1.21.1
 | 专用服务器启动到 `Done` | 未执行（见下） | 通过，模组与依赖共 22 项全部加载 |
 | 词条标签 / 重铸资格（`couldReforge`） | 未执行 | 通过 |
 | 获取时随机词条 + 配置开关 A/B | 未执行 | 通过（开：40 次判定 23 次获得词条；关：0 次） |
-| 词条属性映射到 GunsmithLib | 未执行 | 通过（存储 `ranged_damage`，实际生效 `gunsmithlib:bullet_damage`，数值与运算方式不变） |
+| 词条属性映射到 GunsmithLib | 未执行 | 通过（遍历远程词条池逐条核对：`ranged_damage`→`gunsmithlib:bullet_damage`、`attack_speed`→`gunsmithlib:rpm`、`ranged_velocity`→`gunsmithlib:bullet_speed`，数值与运算方式不变；暴击率与击退保持原样） |
 
 1.20.1 分支未做运行时验证的原因：Confluence 1.20.1 强制依赖的 **PortLib** 没有发布到
 任何公开 Maven、CurseForge、Modrinth 或 GitHub Release，无法在开发环境中组装出可启动的依赖集合。
