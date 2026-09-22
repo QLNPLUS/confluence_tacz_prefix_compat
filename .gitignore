@@ -1,0 +1,24 @@
+﻿# build outputs
+build/
+out/
+.gradle/
+run/
+runs/
+logs/
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.eclipse/
+bin/
+.settings/
+
+# research scratch (cloned upstream sources / subagent reports)
+work/
+research/
+
+# local dependency jars
+libs/*.jar
+!libs/.gitkeep
