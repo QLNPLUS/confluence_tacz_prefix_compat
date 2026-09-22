@@ -33,6 +33,7 @@ neoForge {
 
 repositories {
     maven { name = 'CurseMaven'; url = 'https://cursemaven.com' }
+    maven { name = 'Modrinth'; url = 'https://api.modrinth.com/maven' }
 }
 
 // 与 Forge 分支同理：Confluence 的 jarJar 内嵌库（Confluence-Magic-Lib / TerraCurio）
@@ -59,6 +60,20 @@ def extractConfluenceLibs = tasks.register('extractConfluenceLibs', Sync) {
 dependencies {
     compileOnly files({ configurations.confluenceDist.singleFile })
     compileOnly files({ confluenceLibsDir.get().asFile.listFiles() }).builtBy(extractConfluenceLibs)
+}
+
+// 仅用于开发环境启动（runServer / runClient）的依赖，不进入发布的 jar。
+// Confluence 强制依赖 curios；TACZ 与 GunsmithLib 用于验证词条属性映射。
+dependencies {
+    runtimeOnly 'maven.modrinth:curios:9.5.1+1.21.1'
+    // 用版本 id 而不是版本号，否则 Modrinth 会解析到 Fabric 主文件
+    runtimeOnly 'maven.modrinth:geckolib:Grwn5rUB'
+    runtimeOnly 'maven.modrinth:terrablender:6e8GCrLb'
+    runtimeOnly 'maven.modrinth:OypNE65K:1.1.8-hotfix-r6'
+    runtimeOnly 'curse.maven:confluence-1209464:8940190'
+    if (file('libs/gunsmithlib-1.21.1.jar').exists()) {
+        runtimeOnly files('libs/gunsmithlib-1.21.1.jar')
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {
