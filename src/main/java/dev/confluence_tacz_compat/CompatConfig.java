@@ -1,6 +1,9 @@
 package dev.confluence_tacz_compat;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
+
+import java.util.List;
 
 /**
  * 通用配置。所有选项都在服务端生效；COMMON 类型保证客户端也能读到同样的值，
@@ -11,7 +14,8 @@ public final class CompatConfig {
 
     private static final ForgeConfigSpec.BooleanValue ENABLE_AUTO_PREFIX;
     private static final ForgeConfigSpec.DoubleValue AUTO_PREFIX_CHANCE;
-    private static final ForgeConfigSpec.BooleanValue USE_GUNSMITHLIB_ATTRIBUTES;
+    private static final ForgeConfigSpec.BooleanValue ATTRIBUTE_REPLACEMENT_ENABLED;
+    private static final ForgeConfigSpec.ConfigValue<List<? extends String>> ATTRIBUTE_MAPPINGS;
     private static final ForgeConfigSpec.BooleanValue REPLACE_RANGED_DAMAGE;
     private static final ForgeConfigSpec.BooleanValue REPLACE_ATTACK_SPEED;
     private static final ForgeConfigSpec.BooleanValue REPLACE_RANGED_VELOCITY;
@@ -31,19 +35,30 @@ public final class CompatConfig {
                 .defineInRange("autoPrefixChance", 0.75D, 0.0D, 1.0D);
         builder.pop();
 
-        builder.comment("词条属性映射：把 Confluence 的远程属性替换为 GunsmithLib 属性",
-                        "GunsmithLib 未安装时，下面的开关自动失效，词条保持 Confluence 原属性。").push("gunsmithlib");
-        USE_GUNSMITHLIB_ATTRIBUTES = builder
-                .comment("总开关。关闭后枪械词条完全保留 Confluence 原属性（对枪械而言大多不生效）。")
+        builder.comment("词条属性映射：按配置把 Confluence 的词条属性替换为任意已注册属性。",
+                        "GunsmithLib 未安装时，默认目标属性不会注册；对应映射会自动跳过。").push("gunsmithlib");
+        ATTRIBUTE_REPLACEMENT_ENABLED = builder
+                .comment("总开关。保留旧配置项名称以兼容已有配置；关闭后禁用下方全部映射。")
                 .define("useGunsmithLibAttributes", true);
+        ATTRIBUTE_MAPPINGS = builder
+                .comment("属性替换表，每项格式为 source_namespace:source_path=target_namespace:target_path。",
+                        "Confluence 远程词缀涉及：confluence_magic_lib:generic.ranged_damage、minecraft:attack_speed、",
+                        "confluence_magic_lib:generic.critical_chance、confluence_magic_lib:generic.ranged_velocity、minecraft:attack_knockback。",
+                        "未注册的来源或目标属性会被跳过；重复来源以后出现的配置为准。",
+                        "暴击率和击退没有 GunsmithLib 默认目标，可在这里填写其它模组已注册且会被枪械逻辑读取的属性。")
+                .defineList("attributeMappings", List.of(
+                        "confluence_magic_lib:generic.ranged_damage=gunsmithlib:bullet_damage",
+                        "minecraft:attack_speed=gunsmithlib:rpm",
+                        "confluence_magic_lib:generic.ranged_velocity=gunsmithlib:bullet_speed"
+                ), CompatConfig::isAttributeMapping);
         REPLACE_RANGED_DAMAGE = builder
-                .comment("远程伤害 (confluence_magic_lib:generic.ranged_damage) -> gunsmithlib:bullet_damage。")
+                .comment("旧配置兼容开关：false 时禁用来源属性 confluence_magic_lib:generic.ranged_damage 的映射。")
                 .define("replaceRangedDamage", true);
         REPLACE_ATTACK_SPEED = builder
-                .comment("攻击速度 (minecraft:attack_speed) -> gunsmithlib:rpm。")
+                .comment("旧配置兼容开关：false 时禁用来源属性 minecraft:attack_speed 的映射。")
                 .define("replaceAttackSpeed", true);
         REPLACE_RANGED_VELOCITY = builder
-                .comment("远程弹速 (confluence_magic_lib:generic.ranged_velocity) -> gunsmithlib:bullet_speed。")
+                .comment("旧配置兼容开关：false 时禁用来源属性 confluence_magic_lib:generic.ranged_velocity 的映射。")
                 .define("replaceRangedVelocity", true);
         builder.pop();
 
@@ -60,19 +75,33 @@ public final class CompatConfig {
         return AUTO_PREFIX_CHANCE.get();
     }
 
-    public static boolean useGunsmithLibAttributes() {
-        return USE_GUNSMITHLIB_ATTRIBUTES.get();
+    public static boolean attributeReplacementEnabled() {
+        return ATTRIBUTE_REPLACEMENT_ENABLED.get();
     }
 
-    public static boolean replaceRangedDamage() {
-        return REPLACE_RANGED_DAMAGE.get();
+    public static List<? extends String> attributeMappings() {
+        return ATTRIBUTE_MAPPINGS.get();
     }
 
-    public static boolean replaceAttackSpeed() {
-        return REPLACE_ATTACK_SPEED.get();
+    /** Keeps the source-specific switches from older config files working. */
+    public static boolean isLegacyMappingEnabled(String sourceId) {
+        return switch (sourceId) {
+            case "confluence_magic_lib:generic.ranged_damage" -> REPLACE_RANGED_DAMAGE.get();
+            case "minecraft:attack_speed" -> REPLACE_ATTACK_SPEED.get();
+            case "confluence_magic_lib:generic.ranged_velocity" -> REPLACE_RANGED_VELOCITY.get();
+            default -> true;
+        };
     }
 
-    public static boolean replaceRangedVelocity() {
-        return REPLACE_RANGED_VELOCITY.get();
+    private static boolean isAttributeMapping(Object value) {
+        if (!(value instanceof String mapping)) return false;
+        int separator = mapping.indexOf('=');
+        if (separator <= 0 || separator != mapping.lastIndexOf('=')) return false;
+        return isNamespacedId(mapping.substring(0, separator).trim())
+                && isNamespacedId(mapping.substring(separator + 1).trim());
+    }
+
+    private static boolean isNamespacedId(String value) {
+        return value.indexOf(':') > 0 && ResourceLocation.tryParse(value) != null;
     }
 }

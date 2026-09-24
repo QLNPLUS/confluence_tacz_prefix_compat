@@ -2,70 +2,45 @@ package dev.confluence_tacz_compat;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.confluence.lib.common.LibAttributes;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * Confluence 词条属性 -> GunsmithLib 属性 的映射。
- *
- * <p>基于 GunsmithLib 的属性结算方式 {@code GsHelper.getAttributeValueWithBase(holder, attribute, base)}：
- * 它会把 base 临时设为枪械自身数值，再套用属性修饰符。因此 Confluence 词条使用的
- * {@code ADD_MULTIPLY_TOTAL}（百分比）语义可以原样平移，无需换算。</p>
- *
- * <p>属性 id 通过注册表按名解析，GunsmithLib 因此是软依赖：未安装时映射整体失效，
- * 词条保留 Confluence 原本的属性。</p>
+ * Resolves the configured source-to-target attribute replacements from the Forge attribute registry.
  */
 public final class GunAttributeMapping {
-    public static final String GUNSMITHLIB_MOD_ID = "gunsmithlib";
+    private final Map<ResourceLocation, Attribute> replacements;
 
-    private static final ResourceLocation BULLET_DAMAGE_ID = ResourceLocation.fromNamespaceAndPath(GUNSMITHLIB_MOD_ID, "bullet_damage");
-    private static final ResourceLocation RPM_ID = ResourceLocation.fromNamespaceAndPath(GUNSMITHLIB_MOD_ID, "rpm");
-    private static final ResourceLocation BULLET_SPEED_ID = ResourceLocation.fromNamespaceAndPath(GUNSMITHLIB_MOD_ID, "bullet_speed");
-
-    private static GunAttributeMapping cached;
-
-    private final Attribute bulletDamage;
-    private final Attribute rpm;
-    private final Attribute bulletSpeed;
-
-    private GunAttributeMapping(Attribute bulletDamage, Attribute rpm, Attribute bulletSpeed) {
-        this.bulletDamage = bulletDamage;
-        this.rpm = rpm;
-        this.bulletSpeed = bulletSpeed;
+    private GunAttributeMapping(Map<ResourceLocation, Attribute> replacements) {
+        this.replacements = Map.copyOf(replacements);
     }
 
-    /** 返回可用的映射；GunsmithLib 缺失或配置关闭时返回 null。 */
+    /** Returns the configured mappings, skipping attribute ids that are not registered. */
     public static @Nullable GunAttributeMapping get() {
-        if (!CompatConfig.useGunsmithLibAttributes()) return null;
-        GunAttributeMapping mapping = cached;
-        if (mapping != null) return mapping;
-        if (!ModList.get().isLoaded(GUNSMITHLIB_MOD_ID)) return null;
-        Attribute damage = ForgeRegistries.ATTRIBUTES.getValue(BULLET_DAMAGE_ID);
-        Attribute rate = ForgeRegistries.ATTRIBUTES.getValue(RPM_ID);
-        Attribute speed = ForgeRegistries.ATTRIBUTES.getValue(BULLET_SPEED_ID);
-        if (damage == null || rate == null || speed == null) return null;
-        mapping = new GunAttributeMapping(damage, rate, speed);
-        cached = mapping;
-        return mapping;
+        if (!CompatConfig.attributeReplacementEnabled()) return null;
+        Map<ResourceLocation, Attribute> replacements = new HashMap<>();
+        for (String entry : CompatConfig.attributeMappings()) {
+            int separator = entry.indexOf('=');
+            if (separator <= 0 || separator != entry.lastIndexOf('=')) continue;
+
+            ResourceLocation sourceId = ResourceLocation.tryParse(entry.substring(0, separator).trim());
+            ResourceLocation targetId = ResourceLocation.tryParse(entry.substring(separator + 1).trim());
+            if (sourceId == null || targetId == null || !CompatConfig.isLegacyMappingEnabled(sourceId.toString())) continue;
+
+            Attribute source = ForgeRegistries.ATTRIBUTES.getValue(sourceId);
+            Attribute target = ForgeRegistries.ATTRIBUTES.getValue(targetId);
+            if (source == null || target == null || source == target) continue;
+            replacements.put(sourceId, target);
+        }
+        return replacements.isEmpty() ? null : new GunAttributeMapping(replacements);
     }
 
-    /**
-     * @return 目标属性；该属性无需替换时返回 null
-     */
+    /** Returns the replacement attribute, or null when the source attribute is not configured. */
     public @Nullable Attribute map(Attribute source) {
-        if (CompatConfig.replaceRangedDamage() && source == LibAttributes.getRangedDamage().value()) {
-            return bulletDamage;
-        }
-        if (CompatConfig.replaceAttackSpeed() && source == Attributes.ATTACK_SPEED) {
-            return rpm;
-        }
-        if (CompatConfig.replaceRangedVelocity() && source == LibAttributes.getRangedVelocity().value()) {
-            return bulletSpeed;
-        }
-        // 暴击率、击退等没有对应的 GunsmithLib 属性，保持 Confluence 原样。
-        return null;
+        ResourceLocation sourceId = ForgeRegistries.ATTRIBUTES.getKey(source);
+        return sourceId == null ? null : replacements.get(sourceId);
     }
 }
