@@ -38,13 +38,15 @@ repositories {
 
 // Confluence 发布物本身无法直接提供编译所需的全部类型：它把 Confluence-Magic-Lib 与
 // TerraCurio 通过 jarJar 内嵌在 META-INF/jarjar 下，而 Gradle 不会把内嵌 jar 放进编译类路径。
-// 这里从唯一的 CurseForge 坐标里把内嵌库解出来，保证全新克隆只凭一个坐标即可编译。
+// 这里从 Confluence 的 CurseForge 坐标里把内嵌库解出来；TACZ 和 PortLib API 则单独声明编译依赖。
 configurations {
     confluenceDist
 }
 
 dependencies {
     confluenceDist 'curse.maven:confluence-1209464:8940876'
+    compileOnly 'curse.maven:timeless-and-classics-zero-1028108:8055552'
+    compileOnly 'curse.maven:mesdagportlib-1643194:8940829'
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 

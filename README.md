@@ -13,7 +13,7 @@
    | Confluence 词条属性 | 替换为 | 说明 |
    |---|---|---|
    | 远程伤害 `confluence_magic_lib:generic.ranged_damage` | `gunsmithlib:bullet_damage` | +N% 子弹伤害 |
-   | 攻击速度 `minecraft:attack_speed` | `gunsmithlib:rpm` | +N% 射速 |
+   | 攻击速度 `minecraft:generic.attack_speed` | `gunsmithlib:rpm` | +N% 射速 |
    | 远程弹速 `confluence_magic_lib:generic.ranged_velocity` | `gunsmithlib:bullet_speed` | +N% 子弹飞行速度 |
 
    GunsmithLib 在结算时会把属性的 base 临时设为枪械自身数值再套用修饰符，
@@ -47,16 +47,12 @@
 	# 每项格式："来源属性 ID=目标属性 ID"。默认值沿用已有的伤害、射速和弹速映射。
 	attributeMappings = [
 		"confluence_magic_lib:generic.ranged_damage=gunsmithlib:bullet_damage",
-		"minecraft:attack_speed=gunsmithlib:rpm",
+		"minecraft:generic.attack_speed=gunsmithlib:rpm",
 		"confluence_magic_lib:generic.ranged_velocity=gunsmithlib:bullet_speed",
 		# 需要时，追加已注册的暴击率和击退目标属性：
 		# "confluence_magic_lib:generic.critical_chance=your_mod:bullet_critical_chance",
-		# "minecraft:attack_knockback=your_mod:bullet_knockback",
+		# "minecraft:generic.attack_knockback=your_mod:bullet_knockback",
 	]
-	# 目标属性必须由已加载模组注册，且枪械逻辑需要读取它才会影响弹丸效果。
-	replaceRangedDamage = true
-	replaceAttackSpeed = true
-	replaceRangedVelocity = true
 ```
 
 配置为 COMMON 类型，客户端与服务端都会读取同一份文件；专用服务器上以服务端文件为准。
@@ -99,7 +95,7 @@ cd neoforge-1.21.1
 | 专用服务器启动到 `Done` | 未执行（见下） | 通过，模组与依赖共 22 项全部加载 |
 | 词条标签 / 重铸资格（`couldReforge`） | 未执行 | 通过 |
 | 获取时随机词条 + 配置开关 A/B | 未执行 | 通过（开：40 次判定 23 次获得词条；关：0 次） |
-| 词条属性映射到 GunsmithLib | 未执行 | 通过（旧版默认映射逐条核对：`ranged_damage`→`gunsmithlib:bullet_damage`、`attack_speed`→`gunsmithlib:rpm`、`ranged_velocity`→`gunsmithlib:bullet_speed`，数值与运算方式不变；暴击率与击退保持原样） |
+| 词条属性映射到 GunsmithLib | 未执行 | 通过（默认映射逐条核对：`ranged_damage`→`gunsmithlib:bullet_damage`、`attack_speed`→`gunsmithlib:rpm`、`ranged_velocity`→`gunsmithlib:bullet_speed`，数值与运算方式不变；暴击率与击退保持原样） |
 
 本次可配置映射在 1.20.1 Forge 与 1.21.1 NeoForge 均通过 `compileJava`；两边都未启动游戏检查新 TOML 映射的运行时行为。
 
@@ -110,7 +106,7 @@ cd neoforge-1.21.1
 ## 已知限制
 
 - **暴击率与击退需要额外配置目标属性**：Confluence 对应来源 ID 为
-  `confluence_magic_lib:generic.critical_chance` 和 `minecraft:attack_knockback`。GunsmithLib 没有内置目标属性；
+  `confluence_magic_lib:generic.critical_chance` 和 `minecraft:generic.attack_knockback`。GunsmithLib 没有内置目标属性；
   可映射到其它模组注册的属性，但只有在枪械逻辑读取该目标属性时才会影响子弹效果。
 - **关闭自动词条只影响“获取时”**：已经带有词条的枪械不会被清除；想换词条请用哥布林工匠重铸。
 - **1.20.1 的重铸价格更高**：Confluence 1.20.1 的 `getReforgeCost` 尚未实现心情折扣

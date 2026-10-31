@@ -50,7 +50,7 @@ UNKNOWN
 
 ## 3. 远程专属词条 RANGED（12 条）
 
-对照表头：`远程伤害 = LibAttributes.getRangedDamage()`（乘法）、`攻击速度 = minecraft:attack_speed`（乘法）、`暴击率 = LibAttributes.getCriticalChance()`（加法，+3% 即 +0.03）、`弹速 = LibAttributes.getRangedVelocity()`（乘法）、`击退 = minecraft:attack_knockback`（加法）、`价值倍率` 见 §6、`稀有度` 见 §6。
+对照表头：`远程伤害 = LibAttributes.getRangedDamage()`（乘法）、`攻击速度 = minecraft:generic.attack_speed`（乘法）、`暴击率 = LibAttributes.getCriticalChance()`（加法，+3% 即 +0.03）、`弹速 = LibAttributes.getRangedVelocity()`（乘法）、`击退 = minecraft:generic.attack_knockback`（加法）、`价值倍率` 见 §6、`稀有度` 见 §6。
 
 | ID | 词条 | 英文 | 远程伤害 | 攻击速度 | 暴击率 | 弹速 | 击退 | tier | 价值倍率 | 稀有度 |
 |---:|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -200,8 +200,8 @@ VALUE = ValueComponent.getValue(stack, 50, true) × num14 × num14   // 注意�
 - **远程伤害** `RangedDamage`：`applyRangedDamage()` 只在 `damageSource.is(DamageTypeTags.IS_PROJECTILE)` 时把伤害 `× 属性值`。
 - **弹速** `RangedVelocity`：`applyToArrow()` 对 `AbstractArrow` 缩放 `deltaMovement`；TerraGuns 侧在 `GunEvent.AmmoDataEvent` 里 `velocity × 属性值`、`knockback × attack_knockback 属性值`（`ItemEvents.java:154-171`）。
 - **暴击率** `CriticalChance`：`applyToArrow()` 用 `checkChance` 决定箭矢是否 `setCritArrow`。
-- **击退** `minecraft:attack_knockback`：箭矢走 `original × (1 + 属性值)`，枪械走 `knockback × 属性值`（武器自身通过 `ModItems.attributes(damage, knockback)` 提供基础击退）。
-- **攻击速度** `minecraft:attack_speed`：原版使用动画速度。
+- **击退** `minecraft:generic.attack_knockback`：箭矢走 `original × (1 + 属性值)`，枪械走 `knockback × 属性值`（武器自身通过 `ModItems.attributes(damage, knockback)` 提供基础击退）。
+- **攻击速度** `minecraft:generic.attack_speed`：原版使用动画速度。
 
 UI 表现：物品名会变成 `词条名 + 空格 + 原名` 并**沿用该物品的稀有度颜色**（`GameClientEvents.java:291-308`，分隔符 `confluence.prefix_separator`），例如"虚幻 手炮"整串按紫色渲染。
 

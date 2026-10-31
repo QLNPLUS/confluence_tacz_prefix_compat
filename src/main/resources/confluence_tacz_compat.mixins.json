@@ -5,7 +5,16 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "confluence_tacz_compat.refmap.json",
   "mixins": [
-    "PrefixUtilsMixin"
+    "PrefixUtilsMixin",
+    "AmmoSlotMixin",
+    "TaczAmmoStackSizeMixin",
+    "AbstractGunItemMixin",
+    "ModernKineticGunScriptAPIMixin",
+    "LivingEntityShootMixin"
+  ],
+  "client": [
+    "GunAnimationStateContextMixin",
+    "GunHudOverlayMixin"
   ],
   "injectors": {
     "defaultRequire": 1

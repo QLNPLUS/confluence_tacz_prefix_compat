@@ -28,7 +28,7 @@ public final class GunAttributeMapping {
 
             ResourceLocation sourceId = ResourceLocation.tryParse(entry.substring(0, separator).trim());
             ResourceLocation targetId = ResourceLocation.tryParse(entry.substring(separator + 1).trim());
-            if (sourceId == null || targetId == null || !CompatConfig.isLegacyMappingEnabled(sourceId.toString())) continue;
+            if (sourceId == null || targetId == null) continue;
 
             Attribute source = ForgeRegistries.ATTRIBUTES.getValue(sourceId);
             Attribute target = ForgeRegistries.ATTRIBUTES.getValue(targetId);
