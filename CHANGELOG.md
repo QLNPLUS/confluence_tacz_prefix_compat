@@ -1,5 +1,13 @@
 # Changelog
 
+## 未发布
+
+### 新增
+
+- **暴击率 tooltip 着色开关**：新增 `tooltip.colorCriticalChanceName`，默认开启。
+  关闭后不再按 `attribute_display_style.json` 的 `name_color` 改写纯文本暴击率行末尾的属性名颜色，
+  避免与 KubeJS 或其它 tooltip 模组自己设置的颜色冲突。
+
 ## 1.0.0
 
 首个版本，同时适用于 1.20.1 Forge 与 1.21.1 NeoForge。

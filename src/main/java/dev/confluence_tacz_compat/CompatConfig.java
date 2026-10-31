@@ -16,9 +16,7 @@ public final class CompatConfig {
     private static final ForgeConfigSpec.DoubleValue AUTO_PREFIX_CHANCE;
     private static final ForgeConfigSpec.BooleanValue ATTRIBUTE_REPLACEMENT_ENABLED;
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> ATTRIBUTE_MAPPINGS;
-    private static final ForgeConfigSpec.BooleanValue REPLACE_RANGED_DAMAGE;
-    private static final ForgeConfigSpec.BooleanValue REPLACE_ATTACK_SPEED;
-    private static final ForgeConfigSpec.BooleanValue REPLACE_RANGED_VELOCITY;
+    private static final ForgeConfigSpec.BooleanValue CRITICAL_CHANCE_TOOLTIP_COMPAT;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -38,28 +36,27 @@ public final class CompatConfig {
         builder.comment("词条属性映射：按配置把 Confluence 的词条属性替换为任意已注册属性。",
                         "GunsmithLib 未安装时，默认目标属性不会注册；对应映射会自动跳过。").push("gunsmithlib");
         ATTRIBUTE_REPLACEMENT_ENABLED = builder
-                .comment("总开关。保留旧配置项名称以兼容已有配置；关闭后禁用下方全部映射。")
+                .comment("映射总开关。关闭后禁用下方全部映射。")
                 .define("useGunsmithLibAttributes", true);
         ATTRIBUTE_MAPPINGS = builder
                 .comment("属性替换表，每项格式为 source_namespace:source_path=target_namespace:target_path。",
-                        "Confluence 远程词缀涉及：confluence_magic_lib:generic.ranged_damage、minecraft:attack_speed、",
-                        "confluence_magic_lib:generic.critical_chance、confluence_magic_lib:generic.ranged_velocity、minecraft:attack_knockback。",
+                        "Confluence 远程词缀涉及：confluence_magic_lib:generic.ranged_damage、minecraft:generic.attack_speed、",
+                        "confluence_magic_lib:generic.critical_chance、confluence_magic_lib:generic.ranged_velocity、minecraft:generic.attack_knockback。",
                         "未注册的来源或目标属性会被跳过；重复来源以后出现的配置为准。",
                         "暴击率和击退没有 GunsmithLib 默认目标，可在这里填写其它模组已注册且会被枪械逻辑读取的属性。")
                 .defineList("attributeMappings", List.of(
                         "confluence_magic_lib:generic.ranged_damage=gunsmithlib:bullet_damage",
-                        "minecraft:attack_speed=gunsmithlib:rpm",
+                        "minecraft:generic.attack_speed=gunsmithlib:rpm",
                         "confluence_magic_lib:generic.ranged_velocity=gunsmithlib:bullet_speed"
                 ), CompatConfig::isAttributeMapping);
-        REPLACE_RANGED_DAMAGE = builder
-                .comment("旧配置兼容开关：false 时禁用来源属性 confluence_magic_lib:generic.ranged_damage 的映射。")
-                .define("replaceRangedDamage", true);
-        REPLACE_ATTACK_SPEED = builder
-                .comment("旧配置兼容开关：false 时禁用来源属性 minecraft:attack_speed 的映射。")
-                .define("replaceAttackSpeed", true);
-        REPLACE_RANGED_VELOCITY = builder
-                .comment("旧配置兼容开关：false 时禁用来源属性 confluence_magic_lib:generic.ranged_velocity 的映射。")
-                .define("replaceRangedVelocity", true);
+        builder.pop();
+
+        builder.comment("暴击率 tooltip 兼容").push("tooltip");
+        CRITICAL_CHANCE_TOOLTIP_COMPAT = builder
+                .comment("开启后，会把纯文本暴击率行末尾的属性名按 attribute_display_style.json 的 name_color 重新着色，",
+                        "用于修复 Confluence 把暴击率行压平成字面量后第三方 tooltip 模组无法识别属性名的问题。",
+                        "关闭后完全不再改写任何 tooltip 行，保留其它模组或 KubeJS 原本设置的颜色。")
+                .define("colorCriticalChanceName", true);
         builder.pop();
 
         SPEC = builder.build();
@@ -83,14 +80,8 @@ public final class CompatConfig {
         return ATTRIBUTE_MAPPINGS.get();
     }
 
-    /** Keeps the source-specific switches from older config files working. */
-    public static boolean isLegacyMappingEnabled(String sourceId) {
-        return switch (sourceId) {
-            case "confluence_magic_lib:generic.ranged_damage" -> REPLACE_RANGED_DAMAGE.get();
-            case "minecraft:attack_speed" -> REPLACE_ATTACK_SPEED.get();
-            case "confluence_magic_lib:generic.ranged_velocity" -> REPLACE_RANGED_VELOCITY.get();
-            default -> true;
-        };
+    public static boolean colorCriticalChanceName() {
+        return CRITICAL_CHANCE_TOOLTIP_COMPAT.get();
     }
 
     private static boolean isAttributeMapping(Object value) {
