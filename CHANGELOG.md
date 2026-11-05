@@ -2,6 +2,23 @@
 
 ## 未发布
 
+### 修复
+
+- **与 TACZ-addon 的精妙背包弹药支持冲突**：此前为了优先消耗 Confluence 弹药槽，
+  直接取消了 TACZ `consumeAmmoFromPlayer` 的整个方法体，导致 TACZ-addon 在该方法
+  RETURN 处追加的精妙背包 / Create Storage / Curios 弹药来源被跳过，HUD 统计与实际消耗脱节。
+  现在改为把弹药槽包装成玩家物品栏视图交给 TACZ 原生流程，弹药槽仍然优先扣除，
+  第三方在 RETURN 处的补充逻辑继续生效，并且不会重复扣弹。
+  涉及 `ModernKineticGunScriptAPI` 与 `LivingEntityShoot` 两条消耗路径。
+
+- **HUD 备弹重复统计修复（可开关）**：新增 `hud.fixBackpackAmmoDoubleCount`，默认开启。
+  TACZ-addon 重建 HUD 备弹视图时，同一精妙背包可能经 Create Storage 与
+  Sophisticated Backpacks 两个兼容层各统计一次（背包 2498 时 HUD 显示 4996）。
+  开启后本模组在 TACZ-addon 的虚拟物品栏结果上对非主物品栏部分按
+  `物品 + NBT + 数量` 去重，再补上 Confluence 弹药槽；关闭后完全保留原统计。
+- **HUD 备弹上限**：移除 TACZ 在背包直读模式下对弹药数的 9999 硬截断，
+  使弹药槽与背包总和超过 9999 时仍显示真实数量。
+
 ### 新增
 
 - **暴击率 tooltip 着色开关**：新增 `tooltip.colorCriticalChanceName`，默认开启。

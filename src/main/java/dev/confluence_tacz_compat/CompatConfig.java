@@ -17,6 +17,7 @@ public final class CompatConfig {
     private static final ForgeConfigSpec.BooleanValue ATTRIBUTE_REPLACEMENT_ENABLED;
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> ATTRIBUTE_MAPPINGS;
     private static final ForgeConfigSpec.BooleanValue CRITICAL_CHANCE_TOOLTIP_COMPAT;
+    private static final ForgeConfigSpec.BooleanValue FIX_BACKPACK_AMMO_DOUBLE_COUNT;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -59,6 +60,15 @@ public final class CompatConfig {
                 .define("colorCriticalChanceName", true);
         builder.pop();
 
+        builder.comment("HUD 兼容").push("hud");
+        FIX_BACKPACK_AMMO_DOUBLE_COUNT = builder
+                .comment("修复 TACZ-addon 的 HUD 备弹把精妙背包内弹药统计两次的问题（背包 2498 时 HUD 显示 4996）。",
+                        "开启后，HUD 备弹由本模组重新统计：主物品栏 + Confluence 弹药槽 + 玩家携带背包的 Forge 物品处理器。",
+                        "该统计不包含 Curios 槽位的弹药；若依赖 Curios 备弹，请关闭此开关。",
+                        "关闭后保留 TACZ-addon 原本的统计方式。")
+                .define("fixBackpackAmmoDoubleCount", true);
+        builder.pop();
+
         SPEC = builder.build();
     }
 
@@ -82,6 +92,10 @@ public final class CompatConfig {
 
     public static boolean colorCriticalChanceName() {
         return CRITICAL_CHANCE_TOOLTIP_COMPAT.get();
+    }
+
+    public static boolean fixBackpackAmmoDoubleCount() {
+        return FIX_BACKPACK_AMMO_DOUBLE_COUNT.get();
     }
 
     private static boolean isAttributeMapping(Object value) {
