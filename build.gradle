@@ -45,7 +45,7 @@ configurations {
 
 dependencies {
     confluenceDist 'curse.maven:confluence-1209464:8940876'
-    compileOnly 'curse.maven:timeless-and-classics-zero-1028108:8055552'
+    compileOnly 'curse.maven:timeless-and-classics-zero-1028108:9454481'
     compileOnly 'curse.maven:mesdagportlib-1643194:8940829'
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }

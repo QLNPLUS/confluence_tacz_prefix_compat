@@ -4,6 +4,14 @@
 
 ### 修复
 
+- **兼容 TACZ 1.2.0**：TACZ 1.2.0 移除了 `GunHudOverlay.handleInventoryAmmo`，
+  HUD 备弹改由 `ClientAmmoCount` / `LocalPlayerDataHolder` 统计，导致
+  `GunHudOverlayMixin` 在 `onRegisterGuiOverlays` 阶段注入失败并崩溃。
+  现在旧版注入通过 `require = 0` 声明为可选，1.2.0 改在 `handleCacheCount`
+  返回时把 Confluence 弹药槽并入 HUD 备弹缓存，两个版本都能启动并显示弹药槽备弹。
+  `hud.fixBackpackAmmoDoubleCount` 的去重逻辑仅对 1.1.x 及更早版本生效
+  （1.2.0 原生只统计玩家物品栏，不存在该重复来源）。
+
 - **与 TACZ-addon 的精妙背包弹药支持冲突**：此前为了优先消耗 Confluence 弹药槽，
   直接取消了 TACZ `consumeAmmoFromPlayer` 的整个方法体，导致 TACZ-addon 在该方法
   RETURN 处追加的精妙背包 / Create Storage / Curios 弹药来源被跳过，HUD 统计与实际消耗脱节。
